@@ -1,0 +1,135 @@
+#define PI 3.14159265359
+
+//����uniform����
+uniform float time;
+uniform vec2 mouse;
+uniform vec2 resolution;
+
+//���ɻ������������:
+float fire_noise(vec3 uv, float res) 
+{
+	const vec3 s = vec3(1e0, 1e2, 1e3);
+	uv *= res;
+	vec3 uv0 = floor(mod(uv, res)) * s;
+	vec3 uv1 = floor(mod(uv + vec3(1.0), res)) * s;
+	vec3 f = smoothstep(0.0, 1.0, fract(uv));
+	vec4 v = vec4(uv0.x + uv0.y + uv0.z,
+		      uv1.x + uv0.y + uv0.z,
+		      uv0.x + uv1.y + uv0.z,
+		      uv1.x + uv1.y + uv0.z);
+	vec4 r = fract(sin(v * 1e-1) * 1e3);//fract:x - floor(x)
+	float r0 = mix(mix(r.x, r.y, f.x), mix(r.z, r.w, f.x), f.y);
+	r = fract(sin((v + uv1.z - uv0.z) * 1e-1) * 1e3);
+	float r1 = mix(mix(r.x, r.y, f.x), mix(r.z, r.w, f.x), f.y);
+	return mix(r0, r1,0.5) * 2.0 - 1.0;
+}
+
+//�����������2 
+vec2 star_rand2(vec2 p)
+{
+    p = vec2(dot(p, vec2(102.9898,78.233)), dot(p, vec2(26.65125, 83.054543))); 
+    return fract(sin(p) * 43758.5453);
+}
+
+//�����������1
+float star_rand1(vec2 p)
+{
+    return fract(sin(dot(p.xy ,vec2(505.90898,18.233))) * 43037.5453);
+}
+
+//��������
+float stars(in vec2 x, float numCells, float size, float br)
+{
+    vec2 n = x * numCells;
+    vec2 f = floor(n);
+
+	float d = 1.0e10;
+    for (int i = -1; i <= 1; ++i)
+    {
+        for (int j = -1; j <= 1; ++j)
+        {
+            vec2 g = f + vec2(float(i), float(j));
+			g = n - g - star_rand2(mod(g, numCells)) + star_rand1(g);
+            // ���ƴ�С
+            g *= 1. / (numCells * size);
+			d = min(d, dot(g, g));
+        }
+    }
+	//������������һ������
+    return br * (smoothstep(.95, 1., (1. - sqrt(d))));
+}
+
+//������
+void main( void ) {
+	///////////////////////����ȼ��Ч��
+	//���½���frag��ԭ��
+	//resolution���ӿڣ���������С
+	//��һ����-0.5--0.5
+	vec2 p = -0.5 + gl_FragCoord.xy / resolution.xy;
+	//���ݲ���ͳһ
+	p.x *= resolution.x / resolution.y;
+	//lp��p�����ĵ�ľ��룬Բ�İ뾶
+	float lp = length(p);
+	//ͬһʱ���°뾶��ͬ�ĵط�color������ͬ���뾶��ĵط�color�ܿ��ܱ�0 ��Ҳ���Ǳ��
+	float color ;
+	//�����С��ʱ��仯
+	color = 4.0*(abs(sin(time)) +0.1)- (6.0 * lp);
+
+	//iѭ����������
+	vec3 coord1 = vec3(atan(p.x, p.y) /2.0/PI + 0.5, 0.4 * lp, 0.5);
+	float power = 1.0;
+	for (int i = 0; i < 7; i++)
+	{
+		power *= 2.0;//power�����ݴ�����
+		//����power���ӣ����������������Խ��ԽС
+		//�ǶȺͰ뾶��΢�Ŷ�
+		color += (1.2 / power) * fire_noise(coord1 + vec3(0.01*time, -0.05 * time, 0.0), 16.0 * power);
+	}
+	//ȥ����ֵ��������Χ����ֲ���Ҫ����ɫ��������Ϊ��ɫ
+	color = max(color, 0.0);
+	//colorƽ��
+	float c2 = color * color;
+	//color����
+	float c3 = color * c2;
+
+	//////////////////////////////////////Բ�α仯
+	//����ת���Ķ������ģ�0.5�ĵط�
+	vec2 p2 = (gl_FragCoord.xy * 2.0 - resolution) /(0.5* min(resolution.x, resolution.y));
+	vec3 color2;
+	//һ��40��Բ
+	for (int i = 0; i < 40; i++) 
+	{
+		//ÿ��Բƫ�ƵĽǶ�Ϊdegree��һ��ʮ��Բѭ���ĽǶ�
+		float degree = (float(i) + 1.0) * (360.0 /40.);
+		//������ת��Ϊ������
+		float r =degree * PI / 180.0;
+		//0.2Ϊ�����Բ�İ뾶
+		p2.x += cos(time + r+sin(time)) * 0.15;
+		p2.y += sin(time + r+cos(time)) * 0.15;
+		float f = 0.01 / abs(length(p2) - 0.3);
+		color2 += vec3(f);
+	}
+
+	//////////////////////////////////��������Ч��
+	//���������һ��
+    vec2 p3 = gl_FragCoord.xy / resolution;
+    vec3 color3 = vec3(0.0);
+	//�ۼ�ÿ�μ���Ľ��
+    color3 += stars(vec2(p3.x + time * 2.00,p3.y) , 1., 0.10, 2.)  ; 
+    color3 += stars(vec2(p3.x + time * 1.10,p3.y) , 1., 0.10, 2.) ;
+    color3 += stars(vec2(p3.x + time * 0.8,p3.y) , 1., 0.10, 2.) ;
+    color3 += stars(vec2(p3.x + time * 0.5,p3.y) , 2., 0.09, 2.) ;
+    color3 += stars(vec2(p3.x + time * 0.2,p3.y) , 4., 0.08, 2.) ;	
+    color3 += stars(vec2(p3.x + time * 0.05,p3.y), 8., 0.05, 1.) ;
+    color3 += stars(vec2(p3.x + time * 0.025,p3.y), 10., 0.05,0.8) ;
+	//�������ӣ���ʱ������޹أ����ֲ���
+    color3 += stars(p3, 20., 0.025, 0.5) ;
+
+	//////////////////////////////////////��ɫ��ϣ���ʱ��仯
+	if(time>=6.)
+		gl_FragColor = vec4(vec3(color, 0.4 * c2, 0.15 * c3 )*color2*0.85+vec3(1.,0.4,0.15)*color3, 1.0);//����Ч��
+	else if(time>=4.)
+		gl_FragColor = vec4(vec3(color, 0.4 * c2, 0.15 * c3 )*color2*(sin((time-4.0)/2.*PI/2.))+vec3(1.,0.4,0.15)*color3, 1.0);//����Ч��������
+	if(time<4.)
+		gl_FragColor = vec4(vec3(color2.x,color2.y*0.8,color2.z*0.5)*sin(time/4.*PI/2.0+0.5*PI)+vec3(1.,0.4,0.15)*color3, 1.0);//�ʼ����ʧ
+}
