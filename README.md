@@ -1,1 +1,1 @@
-# my_git
+# change splatmaps of terrain in unity editor
