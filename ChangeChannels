@@ -1,0 +1,135 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using System.IO;
+using UnityEditor;
+
+public enum Channels
+{
+    r,
+    g,
+    b,
+    a
+}
+
+
+public class ChangeChannels : ScriptableWizard
+{
+    public List<Texture2D> Splatmap=new List<Texture2D>();
+    public Channels R_to=Channels.r;
+    public Channels G_to=Channels.g;
+    public Channels B_to=Channels.b;
+    public Channels A_to=Channels.a;
+    public bool FlipVertical;
+
+    
+
+    [MenuItem("地形/修改Splatmap通道顺序")]
+    static void Replace()
+    {
+        ChangeChannels wizard = DisplayWizard<ChangeChannels>(
+            "ChangeChannels", "Apply");
+    }
+
+    private void OnWizardUpdate()
+    {
+        helpString = "change RGBA's channels to justify splat alpha map";
+        isValid = (Splatmap != null);
+    }
+
+    private void OnWizardCreate()
+    {
+        for(int i=0;i<Splatmap.Count;i++)
+        {
+            if (Splatmap[i].format != TextureFormat.RGBA32 && Splatmap[i].format != TextureFormat.ARGB32 && Splatmap[i].format != TextureFormat.RGB24)
+            {
+                EditorUtility.DisplayDialog("Wrong format", "Splatmap "+i.ToString()+" must be set to the RGBA 32 bit format in the Texture Inspector.\nMake sure the type is Advanced and set the format!", "Cancel");
+                return;
+            }
+
+            //w是Splatmap[i]的宽度
+            int w = Splatmap[i].width;
+            if (Mathf.ClosestPowerOfTwo(w) != w)
+            {
+                EditorUtility.DisplayDialog("Wrong size", "Splatmap " + i.ToString() + " width and height must be a power of two!", "Cancel");
+                return;
+            }
+
+            if (R_to == G_to || R_to == B_to || R_to == A_to || G_to == B_to || G_to == A_to || B_to == A_to)
+            {
+                EditorUtility.DisplayDialog("Same Index", "you give same index to RGBA's order !", "Cancel");
+                return;
+            }
+
+            //正式开始修改
+            try
+            {
+                Color[] pixels = Splatmap[i].GetPixels();
+                Color[] copy = Splatmap[i].GetPixels();
+
+                //pixels[(int)R_to] = copy[0];
+                //pixels[(int)G_to] = copy[1];
+                //pixels[(int)B_to] = copy[2];
+                //pixels[(int)A_to] = copy[3];
+                for (int y = 0; y < Splatmap[i].height; y++)
+                    for (int x = 0; x < Splatmap[i].width; x++)
+                    {
+                        int pos = y * Splatmap[i].width + x;
+                        switch (R_to)
+                        {
+                            case Channels.r: break;
+                            case Channels.b: pixels[pos].b = copy[pos].r; break;
+                            case Channels.g: pixels[pos].g = copy[pos].r; break;
+                            case Channels.a: pixels[pos].a = copy[pos].r; break;
+                        }
+                        switch (G_to)
+                        {
+                            case Channels.g: break;
+                            case Channels.r: pixels[pos].r = copy[pos].g; break;
+                            case Channels.b: pixels[pos].b = copy[pos].g; break;
+                            case Channels.a: pixels[pos].a = copy[pos].g; break;
+                        }
+                        switch (B_to)
+                        {
+                            case Channels.b: break;
+                            case Channels.r: pixels[pos].r = copy[pos].b; break;
+                            case Channels.g: pixels[pos].g = copy[pos].b; break;
+                            case Channels.a: pixels[pos].a = copy[pos].b; break;
+                        }
+                        switch (A_to)
+                        {
+                            case Channels.a: break;
+                            case Channels.r: pixels[pos].r = copy[pos].a; break;
+                            case Channels.g: pixels[pos].g = copy[pos].a; break;
+                            case Channels.b: pixels[pos].b = copy[pos].a; break;
+                        }
+                    }
+
+                //反转法向
+                if (FlipVertical)
+                {
+                    var h = w; // always square in unity
+                    for (var y = 0; y < h / 2; y++)
+                    {
+                        var othery = h - y - 1;
+                        for (var x = 0; x < w; x++)
+                        {
+                            var swapval = pixels[y * w + x];
+                            pixels[y * w + x] = pixels[othery * w + x];
+                            pixels[othery * w + x] = swapval;
+                        }
+                    }
+                }
+                Splatmap[i].Resize(Splatmap[i].width, Splatmap[i].height, Splatmap[i].format, true);
+                Splatmap[i].SetPixels(pixels);
+                Splatmap[i].Apply();
+            }
+            catch (System.Exception ex)
+            {
+                EditorUtility.DisplayDialog("Not readable", "The 'New' Splatmap"+i.ToString()+" must be readable. Make sure the type is Advanced and enable read/write and try again!", "Cancel");
+                return;
+            }
+        }
+       
+    }
+}
