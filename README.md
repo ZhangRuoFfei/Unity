@@ -1,1 +1,1 @@
-# my_git
+# Computer Animation Lesson's homework1
