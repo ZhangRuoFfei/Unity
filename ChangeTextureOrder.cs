@@ -79,7 +79,6 @@ public class ChangeTextureOrder : EditorWindow
         if (EditorGUI.EndChangeCheck())
         {
             _serializedObject.ApplyModifiedProperties();
-
         }
         if (EditorGUILayout.Toggle("执行修改", false))
         {
