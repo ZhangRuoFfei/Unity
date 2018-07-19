@@ -94,7 +94,7 @@ public class AutoSave
 	}
 
 	public static bool IsManualSave
-    {
+    	{
 		get
         {
 			return EditorPrefs.GetBool (manualSaveKey);
