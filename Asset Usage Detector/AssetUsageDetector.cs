@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -346,7 +346,6 @@ public class ReferenceNode
 {
     public struct Link
     {
-        //????
         public readonly ReferenceNode targetNode;
         public readonly string description;
         public Link(ReferenceNode targetNode, string description)
@@ -361,7 +360,6 @@ public class ReferenceNode
     private static int uidLast = 0;
     private readonly int uid;
 
-    //???
     //可空类型，就是一种特殊的值类型,可以为null
     private int? instanceId; // instanceId of the nodeObject if it is a Unity object, null otherwise
     private string description; // String to print on this node
@@ -399,7 +397,6 @@ public class ReferenceNode
         links = new List<Link>(2);
         uid = uidLast++;
     }
-    //????
     public ReferenceNode(UnityEngine.Object obj)
     {
         links = new List<Link>(2);
@@ -440,7 +437,7 @@ public class ReferenceNode
             description = "<destroyed>>";
         }
 
-        nodeObject = null;//????
+        nodeObject = null;
 
         for (int i = 0; i < links.Count; i++)
             links[i].targetNode.InitializeRecurisively();
@@ -452,7 +449,7 @@ public class ReferenceNode
         nodeObject = null;
         links.Clear();
     }
-    //????
+
     private void CalculateShortUniquePaths(List<ReferenceHolder.ReferencePath> shortestPaths, List<ReferenceNode>currentPath,List<int>currentPathIndices,int latestObjectIndexInPath)
     {
         int currentIndex = currentPath.Count;
@@ -1008,7 +1005,7 @@ public class AssetUsageDetector : EditorWindow
             //search variables
             GUILayout.Label("Search Variables:");
             GUILayout.BeginHorizontal();
-            //????
+
             if (EditorGUILayout.ToggleLeft("Public", (fieldModifiers & BindingFlags.Public) == BindingFlags.Public))
                 fieldModifiers |= BindingFlags.Public;
             else
@@ -1120,22 +1117,15 @@ public class AssetUsageDetector : EditorWindow
                 }
 
                 GUILayout.EndHorizontal();
-
                 GUILayout.Space(10);
-
                 showToolTips = EditorGUILayout.ToggleLeft("Show tooltips", showToolTips);
-
                 GUILayout.Space(10);
-
                 GUILayout.Label("Path drawing mode:");
 
                 GUILayout.BeginHorizontal();
-
                 GUILayout.Space(35);
-
                 if (EditorGUILayout.ToggleLeft("Full: Draw the complete paths to the references (can be slow with too many references)", pathDrawingMode == PathDrawingMode.Full))
                     pathDrawingMode = PathDrawingMode.Full;
-
                 GUILayout.EndHorizontal();
 
                 //GUILayout.BeginHorizontal();
@@ -1148,12 +1138,9 @@ public class AssetUsageDetector : EditorWindow
                 //GUILayout.EndHorizontal();
 
                 GUILayout.BeginHorizontal();
-
                 GUILayout.Space(35);
-
                 if (EditorGUILayout.ToggleLeft("Shortest: Draw only the last two nodes of complete paths that are unique", pathDrawingMode == PathDrawingMode.Shortest))
                     pathDrawingMode = PathDrawingMode.Shortest;
-
                 GUILayout.EndHorizontal();
 
                 // Tooltip gets its value in ReferenceHolder.DrawOnGUI function
@@ -1175,7 +1162,6 @@ public class AssetUsageDetector : EditorWindow
         GUILayout.EndVertical();
         GUILayout.EndScrollView();
 
-        //未完成
     }
     
     //close scenes which are not in initial scene setup
