@@ -14,7 +14,21 @@ public static class GroupItems
         Undo.RegisterCreatedObjectUndo(go, "Group Selected");
         go.transform.SetParent(Selection.activeTransform.parent, false);
 
-        foreach (var transform in Selection.transforms) Undo.SetTransformParent(transform, go.transform, "Group Selected");
+        Transform[] toTrans = Selection.transforms;
+        Vector3 finalPos = new Vector3(0, 0, 0);
+        int Count = 0;
+        foreach (var transform in Selection.transforms)
+        {
+            Undo.SetTransformParent(transform, go.transform, "Group Selected");
+            Count++;
+            finalPos += transform.localPosition;
+        }
+        finalPos = finalPos / (1.0f * Count);
+        go.transform.localPosition = finalPos;
+        foreach (var transform in Selection.transforms)
+        {
+            transform.localPosition = transform.localPosition - go.transform.localPosition;
+        }
 
         Selection.activeGameObject = go;
         
@@ -43,7 +57,7 @@ public static class GroupItems
             {
                 Transform temp = currentGroups[m].transform.GetChild(0);
                 AfterGroups.Add(temp.gameObject);
-                temp.SetParent(null);
+                temp.SetParent(currentGroups[m].transform.parent);
             }
 
             //delete when it is an empty object
