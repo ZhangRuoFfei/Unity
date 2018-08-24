@@ -5,15 +5,16 @@
 > 在场景中以格点的方式扫描整个场景，相机会在每个格点上朝四个方向依次扫描一遍。找到在这些画面中顶点、面片、drawCall(与材质球个数和物体数量有关)、batches（和drawCalls基本一致）超标的位置，这些地方很可能物体或材质、纹理等过多导致渲染的卡顿。
 
 **使用步骤**
-1. 在prefabs文件夹中创建一个名字是`TestTool`的相机，模式改成`后向渲染Deffered`， 将`TestSceneTool.cs脚本`附加到上面。
+1. 在prefabs文件夹中创建一个名字是`TestTool`的相机，模式改成`后向渲染Deffered`， 将`TestSceneTool.cs脚本`附加到上面。将TestScene.cs脚本放在Editor文件夹下。
 - --------
-2.  在`别墅区场景`（一个流畅的场景），打开`Tools/Scene Info`菜单，然后运行场景，观察batches、vertices那些基本数值，作为之后的判断标准
+2.  在一个流畅的场景中，打开`Tools/Scene Info`菜单，然后运行场景，观察batches、vertices那些基本数值，作为之后的判断标准
 - -------------
-3.  打开卡的需要测试的场景，设置好2中得到的流畅场景的参数作为测试标准，点运行即可。
+3.  打开卡的需要测试的场景，将1中设置好的相机prefab拖入物体选择框，设置好2中得到的流畅场景的参数作为测试标准，点运行即可。
+如果不勾选auto scan，可以自由移动相机；勾选则会根据用户设置的扫描参数在制定区域内自动扫描。
 扫描结束之后会将不合格的位置全部显示出来，如下图下方的四种颜色的方块们。
 点击对应的方块，相机会跳转到对应的位置。
 修改这个位置中冗余的东西。
-- ![Alt text](./1533799069669.png)
+- ![image](https://github.com/ZhangRuoFfei/Unity/blob/UnityEditorTool/Scene/Scene%20Test/demo.png)
 
 **参数设置**
 1. 相机
