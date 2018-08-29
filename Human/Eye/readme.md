@@ -22,4 +22,4 @@
 #### 结果
 漫反射+角膜高光+细节高光（如血管）+虹膜颜色叠加+cubemap环境反射
 
-![result](https://github.com/AcccGO/Unity/blob/UnityShader/demo.png)
+![result](https://github.com/AcccGO/Unity/blob/UnityShader/Human/Eye/demo.png)
